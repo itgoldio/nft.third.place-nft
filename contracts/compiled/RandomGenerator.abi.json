@@ -1,0 +1,69 @@
+{
+	"ABI version": 2,
+	"header": ["pubkey", "time", "expire"],
+	"functions": [
+		{
+			"name": "constructor",
+			"inputs": [
+				{"name":"systemKey","type":"uint256"},
+				{"name":"minBalance","type":"uint128"},
+				{"name":"numOfParticles","type":"uint16"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "fillParticlesArray",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "getRandomParticle",
+			"inputs": [
+				{"name":"recipient","type":"address"}
+			],
+			"outputs": [
+				{"name":"particleId","type":"uint256"}
+			]
+		},
+		{
+			"name": "getFreeParticles",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"particles","type":"uint16[]"}
+			]
+		},
+		{
+			"name": "getMinBalance",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"minBalance","type":"uint128"}
+			]
+		},
+		{
+			"name": "destruct",
+			"inputs": [
+				{"name":"dest","type":"address"}
+			],
+			"outputs": [
+			]
+		}
+	],
+	"data": [
+	],
+	"events": [
+		{
+			"name": "RandomParticleWasGenerated",
+			"inputs": [
+				{"name":"recipient","type":"address"},
+				{"name":"particleId","type":"uint256"}
+			],
+			"outputs": [
+			]
+		}
+	]
+}

@@ -1,0 +1,863 @@
+.version sol 0.47.0
+
+.macro constructor
+DROP
+GETGLOB 2
+ISNULL
+IFREF {
+	CALL $c4_to_c7_with_init_storage$
+}
+;; constructor protection
+GETGLOB 6
+THROWIF 51
+TRUE
+SETGLOB 6
+;; end constructor protection
+LDUQ 256
+PUSHCONT {
+	;; load next cell
+	LDREF
+	ENDS
+	CTOS
+	LDU 256
+}
+IFNOT
+LDUQ 128
+PUSHCONT {
+	;; load next cell
+	LDREF
+	ENDS
+	CTOS
+	LDU 128
+}
+IFNOT
+LDUQ 16
+PUSHCONT {
+	;; load next cell
+	LDREF
+	ENDS
+	CTOS
+	LDU 16
+}
+IFNOT
+ENDS
+;; param: systemKey
+;; param: minBalance
+;; param: numOfParticles
+; constructor RandomGenerator
+ACCEPT
+; expValue
+; end expValue
+;; push identifier minBalance
+; colValue
+; end colValue
+; expValue
+; end expValue
+;; push identifier systemKey
+; colValue
+; end colValue
+; expValue
+; end expValue
+;; push identifier numOfParticles
+; colValue
+; end colValue
+; expValue
+; end expValue
+; colValue
+; end colValue
+; end constructor RandomGenerator
+SWAP
+SETGLOB 12
+SWAP
+SETGLOB 13
+SETGLOB 11
+FALSE
+SETGLOB 14
+CALLREF {
+	CALL $c7_to_c4$
+}
+TRUE
+SETGLOB 7
+
+.macro fillParticlesArray
+DROP
+GETGLOB 2
+ISNULL
+IFREF {
+	CALL $c4_to_c7$
+}
+ENDS
+CALLREF {
+	CALL $fillParticlesArray_internal_macro$
+}
+CALLREF {
+	CALL $c7_to_c4$
+}
+TRUE
+SETGLOB 7
+
+.globl	fillParticlesArray_internal
+.type	fillParticlesArray_internal, @function
+CALL $fillParticlesArray_internal_macro$
+
+.macro fillParticlesArray_internal_macro
+; modifier onlyOwner
+GETGLOB 5
+DUP
+ISNULL
+PUSHCONT {
+	DROP
+	PUSHINT 0
+}
+IF
+;; ==
+;; push identifier _systemKey
+GETGLOB 13
+EQUAL
+THROWIFNOT 101
+; modifier checkBalance
+;; get member balance
+GETPARAM 7
+INDEX 0
+;; >
+;; push identifier _minBalance
+GETGLOB 12
+GREATER
+THROWIFNOT 102
+; function fillParticlesArray
+;; !
+;; push identifier _active
+GETGLOB 14
+THROWIF 104
+ACCEPT
+PUSHINT 0
+;; decl: limit
+;; if
+;; get member length
+;; push identifier _particles
+GETGLOB 10
+INDEX 0
+;; uint16
+UFITS 16
+;; +
+ADDCONST 100
+UFITS 16
+;; <
+;; push identifier _numOfParticles
+GETGLOB 11
+LESS
+PUSHCONT {
+	;; get member length
+	;; push identifier _particles
+	;; uint16
+	;; +
+	; expValue
+	; end expValue
+	; colValue
+	DROP
+	GETGLOB 10
+	INDEX 0
+	UFITS 16
+	ADDCONST 100
+	UFITS 16
+	; end colValue
+}
+PUSHCONT {
+	; expValue
+	; end expValue
+	;; push identifier _numOfParticles
+	; colValue
+	DROP
+	GETGLOB 11
+	; end colValue
+	; expValue
+	; end expValue
+	TRUE
+	; colValue
+	SETGLOB 14
+	; end colValue
+}
+IFELSE
+;; end if
+; for
+;; get member length
+;; push identifier _particles
+GETGLOB 10
+INDEX 0
+;; uint16
+UFITS 16
+;; decl: i
+PUSHCONT {
+	;; push identifier i
+	;; <
+	;; push identifier limit
+	PUSH2 S0, S1
+	LESS
+}
+PUSHCONT {
+	; expValue
+	;; fetch _particles
+	GETGLOB 10
+	; end expValue
+	;; push identifier i
+	PUSH S1
+	;; array.push(..)
+	NEWC
+	STU 16
+	SWAP
+	UNPAIR
+	PUSH S1
+	INC
+	BLKSWAP 3, 1
+	PUSHINT 32
+	DICTUSETB
+	PAIR
+	; colValue
+	SETGLOB 10
+	; end colValue
+	;; ++
+	; expValue
+	; end expValue
+	INC
+	UFITS 16
+	; colValue
+	; end colValue
+}
+WHILE
+; end for
+DROP2
+; end function fillParticlesArray
+; end modifier checkBalance
+; end modifier onlyOwner
+
+.macro getRandomParticle
+DROP
+GETGLOB 2
+ISNULL
+IFREF {
+	CALL $c4_to_c7$
+}
+LDMSGADDRQ
+PUSHCONT {
+	;; load next cell
+	LDREF
+	ENDS
+	CTOS
+	LDMSGADDR
+}
+IFNOT
+ENDS
+;; param: recipient
+CALLREF {
+	CALL $getRandomParticle_internal_macro$
+}
+;; emitting 1 value(s)
+PUSH S1
+PUSHCONT {
+	PUSH S3
+	CTOS
+	LDU 2
+	LDMSGADDR
+	DROP
+	NIP
+	NEWC
+	STSLICECONST xc
+	STSLICE
+	PUSHSLICE x00000000000000000000000037144e6aa_
+	STSLICER
+	STU 256
+	ENDC
+	PUSHINT 0
+	SENDRAWMSG
+}
+PUSHCONT {
+	DROP
+}
+IFELSE
+CALLREF {
+	CALL $c7_to_c4$
+}
+TRUE
+SETGLOB 7
+
+.globl	getRandomParticle_internal
+.type	getRandomParticle_internal, @function
+CALL $getRandomParticle_internal_macro$
+
+.macro getRandomParticle_internal_macro
+;; param: recipient
+;; ret param: particleId
+PUSHINT 0
+; modifier onlyOwner
+GETGLOB 5
+DUP
+ISNULL
+PUSHCONT {
+	DROP
+	PUSHINT 0
+}
+IF
+;; ==
+;; push identifier _systemKey
+GETGLOB 13
+EQUAL
+THROWIFNOT 101
+; modifier checkBalance
+;; get member balance
+GETPARAM 7
+INDEX 0
+;; >
+;; push identifier _minBalance
+GETGLOB 12
+GREATER
+THROWIFNOT 102
+; modifier isActive
+;; push identifier _active
+GETGLOB 14
+THROWIFNOT 104
+; function getRandomParticle
+;; get member length
+;; push identifier _particles
+GETGLOB 10
+INDEX 0
+GTINT 0
+THROWIFNOT 103
+ACCEPT
+;; get member length
+;; push identifier _particles
+GETGLOB 10
+INDEX 0
+CALLREF {
+	CALL $_genNumber_internal_macro$
+}
+;; uint16
+UFITS 16
+;; decl: random
+; expValue
+; end expValue
+;; index
+;; push identifier random
+DUP
+;; push identifier _particles
+GETGLOB 10
+INDEX 1
+PUSHINT 32
+DICTUGET
+THROWIFNOT 50
+PLDU 16
+; colValue
+POP S2
+; end colValue
+;; delete
+; expValue
+;; fetch _particles
+GETGLOB 10
+UNPAIR
+;; push identifier random
+PUSH S2
+SWAP
+PUSH2 S1, S2
+LESS
+THROWIFNOT 50
+; end expValue
+PUSHINT 0
+; colValue
+NEWC
+STU 16
+ROTREV
+PUSHINT 32
+DICTUSETB
+PAIR
+; end colValue
+; expValue
+;; fetch _particles
+DUP
+SETGLOB 10
+UNPAIR
+;; push identifier random
+PUSH S2
+SWAP
+PUSH2 S1, S2
+LESS
+THROWIFNOT 50
+; end expValue
+;; index
+;; get member length
+;; push identifier _particles
+GETGLOB 10
+INDEX 0
+;; -
+DEC
+UFITS 256
+;; push identifier _particles
+GETGLOB 10
+INDEX 1
+PUSHINT 32
+DICTUGET
+THROWIFNOT 50
+PLDU 16
+; colValue
+NEWC
+STU 16
+ROTREV
+PUSHINT 32
+DICTUSETB
+PAIR
+; end colValue
+; expValue
+;; fetch _particles
+DUP
+SETGLOB 10
+; end expValue
+UNPAIR
+PUSH s1
+THROWIFNOT 54
+SWAP
+DEC
+DUP
+ROT
+PUSHINT 32
+DICTUDEL
+DROP
+PAIR
+; colValue
+SETGLOB 10
+; end colValue
+;; push identifier particleId
+;; push identifier recipient
+PUSH2 S1, S2
+;; emit RandomParticleWasGenerated
+PUSHSLICE xc00000000000000000000000006de981e2
+NEWC
+STSLICE
+STSLICE
+STU 256
+ENDC
+PUSHINT 0
+SENDRAWMSG
+DROP
+; end function getRandomParticle
+; end modifier isActive
+; end modifier checkBalance
+; end modifier onlyOwner
+NIP
+
+.globl	_genNumber_internal
+.type	_genNumber_internal, @function
+CALL $_genNumber_internal_macro$
+
+.macro _genNumber_internal_macro
+;; param: limit
+;; ret param: number
+PUSHINT 0
+; function _genNumber
+ACCEPT
+LTIME
+ADDRAND
+;; push identifier limit
+PUSH S1
+RAND
+;; uint64
+UFITS 64
+; expValue
+; end expValue
+; colValue
+NIP
+; end colValue
+; end function _genNumber
+NIP
+
+.macro getFreeParticles
+DROP
+GETGLOB 2
+ISNULL
+IFREF {
+	CALL $c4_to_c7$
+}
+ENDS
+CALLREF {
+	CALL $getFreeParticles_internal_macro$
+}
+;; emitting 1 value(s)
+PUSH S1
+PUSHCONT {
+	PUSH S3
+	CTOS
+	LDU 2
+	LDMSGADDR
+	DROP
+	NIP
+	NEWC
+	STSLICECONST xc
+	STSLICE
+	PUSHSLICE x00000000000000000000000039706cfe2_
+	STSLICER
+	SWAP
+	UNPAIR
+	XCHG s2
+	STU 32
+	STDICT
+	ENDC
+	PUSHINT 0
+	SENDRAWMSG
+}
+PUSHCONT {
+	DROP
+}
+IFELSE
+IFREF {
+	CALL $c7_to_c4$
+}
+TRUE
+SETGLOB 7
+
+.globl	getFreeParticles_internal
+.type	getFreeParticles_internal, @function
+CALL $getFreeParticles_internal_macro$
+
+.macro getFreeParticles_internal_macro
+;; ret param: particles
+; function getFreeParticles
+;; return
+;; push identifier _particles
+GETGLOB 10
+; end function getFreeParticles
+
+.macro getMinBalance
+DROP
+GETGLOB 2
+ISNULL
+IFREF {
+	CALL $c4_to_c7$
+}
+ENDS
+CALLREF {
+	CALL $getMinBalance_internal_macro$
+}
+;; emitting 1 value(s)
+PUSH S1
+PUSHCONT {
+	PUSH S3
+	CTOS
+	LDU 2
+	LDMSGADDR
+	DROP
+	NIP
+	NEWC
+	STSLICECONST xc
+	STSLICE
+	PUSHSLICE x00000000000000000000000023f360abe_
+	STSLICER
+	STU 128
+	ENDC
+	PUSHINT 0
+	SENDRAWMSG
+}
+PUSHCONT {
+	DROP
+}
+IFELSE
+IFREF {
+	CALL $c7_to_c4$
+}
+TRUE
+SETGLOB 7
+
+.globl	getMinBalance_internal
+.type	getMinBalance_internal, @function
+CALL $getMinBalance_internal_macro$
+
+.macro getMinBalance_internal_macro
+;; ret param: minBalance
+; function getMinBalance
+;; return
+;; push identifier _minBalance
+GETGLOB 12
+; end function getMinBalance
+
+.macro destruct
+DROP
+GETGLOB 2
+ISNULL
+IFREF {
+	CALL $c4_to_c7$
+}
+LDMSGADDRQ
+PUSHCONT {
+	;; load next cell
+	LDREF
+	ENDS
+	CTOS
+	LDMSGADDR
+}
+IFNOT
+ENDS
+;; param: dest
+CALLREF {
+	CALL $destruct_internal_macro$
+}
+CALLREF {
+	CALL $c7_to_c4$
+}
+TRUE
+SETGLOB 7
+
+.globl	destruct_internal
+.type	destruct_internal, @function
+CALL $destruct_internal_macro$
+
+.macro destruct_internal_macro
+;; param: dest
+; modifier onlyOwner
+GETGLOB 5
+DUP
+ISNULL
+PUSHCONT {
+	DROP
+	PUSHINT 0
+}
+IF
+;; ==
+;; push identifier _systemKey
+GETGLOB 13
+EQUAL
+THROWIFNOT 101
+; function destruct
+;; push identifier dest
+DUP
+NEWC
+STSLICECONST x42_
+STSLICE
+PUSHINT 111
+STZEROES
+ENDC
+PUSHINT 160
+SENDRAWMSG
+; end function destruct
+; end modifier onlyOwner
+DROP
+
+.macro c7_to_c4
+GETGLOB 14
+GETGLOB 13
+GETGLOB 12
+GETGLOB 11
+GETGLOB 10
+GETGLOB 6
+GETGLOB 3
+GETGLOB 2
+NEWC
+STU 256
+STU 64
+STI 1
+SWAP
+UNPAIR
+XCHG s2
+STU 32
+STDICT
+STU 16
+STU 128
+STU 256
+STI 1
+ENDC
+POP C4
+
+.macro c4_to_c7
+PUSHROOT
+CTOS
+LDU 256      ; pubkey c4
+LDU 64      ; pubkey timestamp c4
+LDI 1       ; pubkey [timestamp] constructor_flag memory
+LDU 32
+LDDICT
+ROTREV
+PAIR
+SWAP
+LDU 16
+LDU 128
+LDU 256
+LDI 1
+ENDS
+SETGLOB 14
+SETGLOB 13
+SETGLOB 12
+SETGLOB 11
+SETGLOB 10
+; pubkey [timestamp] constructor_flag
+SETGLOB 6   ; pubkey [timestamp]
+SETGLOB 3   ; pubkey
+SETGLOB 2
+
+.macro c4_to_c7_with_init_storage
+PUSHROOT
+CTOS
+SBITS
+GTINT 1
+PUSHREFCONT {
+	CALL $c4_to_c7$
+}
+PUSHCONT {
+	PUSHINT 0
+	PUSHROOT
+	CTOS
+	PLDDICT   ; D
+	; init _particles
+	PUSHINT 0
+	NEWDICT
+	PAIR
+	SETGLOB 10
+	; init _numOfParticles
+	PUSHINT 0
+	SETGLOB 11
+	; init _minBalance
+	PUSHINT 0
+	SETGLOB 12
+	; init _systemKey
+	PUSHINT 0
+	SETGLOB 13
+	; init _active
+	PUSHINT 0
+	SETGLOB 14
+	PUSHINT 64
+	DICTUGET
+	THROWIFNOT 61
+	PLDU 256
+	SETGLOB 2
+	PUSHINT 0 ; timestamp
+	SETGLOB 3
+	PUSHINT 0 ; constructor_flag
+	SETGLOB 6
+}
+IFELSE
+
+.internal-alias :main_internal, 0
+.internal :main_internal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function: main_internal
+;; param: contract_balance
+;; param: msg_balance
+;; param: int_msg_info
+;; param: msg_body_slice
+;; param: transaction_type
+PUSH S2
+CTOS
+PLDU 4
+MODPOW2 1
+IFRET
+PUSH S1    ; body
+SEMPTY     ; isEmpty
+IFRET
+PUSH S1 ; body
+LDUQ 32  ; [funcId] body' ok
+THROWIFNOT 60 ; funcId body'
+PUSH S1 ; funcId body' funcId
+IFNOTRET
+SWAP
+CALLREF {
+	CALL $public_function_selector$
+}
+GETGLOB 7
+ISNULL
+THROWIF 60
+
+.internal-alias :main_external, -1
+.internal :main_external
+PUSH S1
+CALLREF {
+	CALL $c4_to_c7_with_init_storage$
+}
+LDU 1 ; haveSign msgSlice
+SWAP
+PUSHCONT {
+	PUSHINT 512
+	LDSLICEX ; signatureSlice msgSlice
+	DUP      ; signatureSlice msgSlice msgSlice
+	HASHSU   ; signatureSlice msgSlice hashMsgSlice
+	SWAP  ; signatureSlice hashMsgSlice msgSlice
+	LDU 1 ; signatureSlice hashMsgSlice havePubkey msgSlice
+	SWAP  ; signatureSlice hashMsgSlice msgSlice havePubkey
+	PUSHCONT {
+		LDU 256       ; signatureSlice hashMsgSlice pubkey msgSlice
+		XCHG s3
+		SWAP
+	}
+	PUSHCONT {
+		XCHG s2
+		GETGLOB 2
+	}
+	IFELSE
+	DUP
+	SETGLOB 5
+	CHKSIGNU      ; msgSlice isSigned
+	THROWIFNOT 40 ; msgSlice
+}
+PUSHCONT {
+	LDU 1      ; havePubkey msgSlice
+	SWAP       ; msgSlice havePubkey
+	THROWIF 58 ; msgSlice
+}
+IFELSE
+LDU 64                         ; timestamp msgSlice
+SWAP                           ; msgSlice timestamp
+CALL $replay_protection_macro$ ; msgSlice
+LDU 32  ; expireAt msgSlice
+SWAP    ; msgSlice expireAt
+NOW     ; msgSlice expireAt now
+GREATER ; msgSlice expireAt>now
+THROWIFNOT 57
+LDU  32 ; funcId body
+SWAP    ; body funcId
+CALLREF {
+	CALL $public_function_selector$
+}
+GETGLOB 7
+ISNULL
+THROWIF 60
+
+.macro public_function_selector
+DUP
+PUSHINT 1548827050
+LEQ
+IFJMPREF {
+	DUP
+	PUSHINT 61058519
+	EQUAL
+	IFJMPREF {
+		CALL $destruct$
+	}
+	DUP
+	PUSHINT 265126575
+	EQUAL
+	IFJMPREF {
+		CALL $getMinBalance$
+	}
+	DUP
+	PUSHINT 1215380005
+	EQUAL
+	IFJMPREF {
+		CALL $constructor$
+	}
+	DUP
+	PUSHINT 1548827050
+	EQUAL
+	IFJMPREF {
+		CALL $getRandomParticle$
+	}
+}
+DUP
+PUSHINT 1735715111
+LEQ
+IFJMPREF {
+	DUP
+	PUSHINT 1707193336
+	EQUAL
+	IFJMPREF {
+		CALL $getFreeParticles$
+	}
+	DUP
+	PUSHINT 1735715111
+	EQUAL
+	IFJMPREF {
+		CALL $fillParticlesArray$
+	}
+}

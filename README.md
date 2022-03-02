@@ -89,3 +89,102 @@ RandomParticleWasGenerated: {
 ```
 
 Отсюда следует, что ивент называется RandomParticleWasGenerated и у него такие параметры: recipient и particleId. ParticleID - id "кусочка" картины в шестнадцатеричном формате. Таким образом можно проверить все ивенты и сопоставить с реальным распределением кусочков.
+
+Попробуем найти выпущенный ивент о минтинге у рут контракта:
+
+NftRoot в main сети находится по адресу:
+
+```
+0:dc330771f5d1329191ec238ef3d30f05ef949ab97af80af2d07e35ed8fcd4161
+```
+
+Воспользуемся уже известным раннее кодом, исправим только адрес:
+
+```
+query {
+  messages(
+  filter:{
+    src: { eq: "0:dc330771f5d1329191ec238ef3d30f05ef949ab97af80af2d07e35ed8fcd4161" },
+    msg_type: {
+      eq: 2
+    }
+  }
+  orderBy:{
+    path:"created_lt"
+    direction:DESC
+  }
+  )
+  {
+    body
+  }
+}
+```
+
+Снова расшифруем поочереди body и найдем ивент создания нашего "кусочка". Путём перебора всех ивентов нашли нужный:
+
+```
+msg.id 9b546093ab18f120d3a4813965816ce817c6f5d6f07f15f7a34921229acbd395
+
+Input arguments:
+    body: te6ccgEBAgEATQABSwtOO+SAFq+V4BsnankpCWQdKzsRta59CrlulmeXnYppOA4XU77wAQBDgBgYzm3ZcZ8b1Nd999uWF/88hz1gMLU32F4Pgdm9ooJu8A==
+     abi: NftRoot.abi.json
+tokenWasMinted: {
+  "nftAddr": "0:b57caf00d93b53c9484b20e959d88dad73e855cb74b33cbcec5349c070ba9df7",
+  "creatorAddr": "0:c0c6736ecb8cf8dea6bbefbedcb0bff9e439eb0185a9bec2f07c0ecded141377"
+}
+```
+
+Вызовем у nft метод getParticleID для получения порядкового номера "кусочка":
+
+```
+tonos-cli --url main.ton.dev run 0:b57caf00d93b53c9484b20e959d88dad73e855cb74b33cbcec5349c070ba9df7 getParticleId '{}' --abi Data.abi.json
+```
+
+Получим
+```
+Input arguments:
+ address: 0:b57caf00d93b53c9484b20e959d88dad73e855cb74b33cbcec5349c070ba9df7
+  method: getParticleId
+  params: {}
+     abi: Data.abi.json
+    keys: None
+lifetime: None
+  output: None
+Connecting to main.ton.dev
+Running get-method...
+Succeeded.
+Result: {
+  "particleId": "0x0000000000000000000000000000000000000000000000000000000000000019"
+}
+```
+
+Переведем particleId в десятичную систему счисления:
+0x19 = 25
+
+Когда мы расшифровывали ивент, который был создан контрактом RandomGenerator мы получили particleId = 24, у этого nft он 25. Это потому что все id в контракте RandomGenerator находятся в промежутке 0..1124, а деплоим nft мы со смещением particleId на 1 т.к. все particleId у nft находятся в диапазоне 1..1025.
+
+
+<h2>Сведения о сборке контракта</h2>
+
+Данный контракт был собран следующими версиями софта:
+
+<b><a href="https://github.com/tonlabs/tonos-cli/releases/tag/v0.17.19">Tonos_cli</a></b> 0.17.19
+
+COMMIT_ID: abf921f2b14579f1c190edf606b7b51c4c4a2cc3
+
+BUILD_DATE: 2021-08-23 10:10:25 +0000
+
+COMMIT_DATE: 2021-08-21 01:55:38 +0300 
+
+Исходный код <a href="https://github.com/tonlabs/tonos-cli/releases/tag/v0.17.19">тут</a><br><br>
+
+<b><a href="https://github.com/tonlabs/TON-Solidity-Compiler/releases/tag/0.47.0">TON-Solidity-Compiler</a></b>
+
+Version: 0.47.0+commit.44cf54ba.Linux.g++ 
+
+Исходный код <a href="https://github.com/tonlabs/TON-Solidity-Compiler/releases/tag/0.47.0">тут</a><br><br>
+
+<b><a href="https://github.com/tonlabs/TVM-linker/tree/0.13.70">TVM_Linker</a></b> v0.13.20
+
+Исходный код <a href="https://github.com/tonlabs/TVM-linker/tree/0.13.70">тут</a><br><br>
+
